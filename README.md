@@ -44,7 +44,7 @@ You can change any of these in Settings → System. If another app already uses 
 
 Requires Windows 10 or 11.
 
-1. Download `Undertone Setup 0.1.0.exe` from the [latest release](https://github.com/Vihan-2008/undertone/releases/latest).
+1. Download `Undertone-Setup-0.1.0.exe` from the [latest release](https://github.com/Vihan-2008/undertone/releases/latest).
 2. Run it. It installs for the current user and starts Undertone. On first run Arrange mode opens so you can place the widgets.
 
 The installer is not code-signed, so Windows SmartScreen may ask you to confirm with More info → Run anyway.
