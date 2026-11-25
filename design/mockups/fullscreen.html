@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Undertone full screen</title>
+<meta name="viewport" content="width=device-width">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="fullscreen.css">
+</head>
+<!--
+  Full-screen player (Ctrl+Alt+F). Mockup URLs:
+    fullscreen.html                      playing, lyrics on, controls visible
+    fullscreen.html?controls=hidden      mouse still for 2.5 s
+    fullscreen.html?lyrics=off           cover centred
+    fullscreen.html?lyrics=loading | none
+    fullscreen.html?track=nothing        no media session
+    fullscreen.html?playback=paused      ?lyricsize=small|large   ?toast=on   ?long=1
+-->
+<body data-lyrics="ready">
+<main class="player">
+  <div class="player__light cover-art" aria-hidden="true"></div>
+  <div class="player__shade" aria-hidden="true"></div>
+  <canvas class="player__viz" data-viz="mirror" data-theme="cover" aria-hidden="true"></canvas>
+
+  <ul class="keys player__chrome" aria-label="Keys">
+    <li><kbd>Space</kbd>Play or pause</li>
+    <li><kbd>←</kbd><kbd>→</kbd>Previous, next</li>
+    <li><kbd>V</kbd>Visualizer</li>
+    <li><kbd>C</kbd>Colours</li>
+    <li><kbd>L</kbd>Lyrics</li>
+    <li><kbd>Esc</kbd>Leave</li>
+  </ul>
+
+  <section class="player__now" aria-label="Now playing">
+    <div class="player__cover cover-art" role="img" aria-label="Album cover"></div>
+    <div class="player__cover player__cover--empty" aria-hidden="true"></div>
+    <h1 class="player__title">Salt Lines</h1>
+    <p class="player__artist">Okono Vale</p>
+
+    <div class="player__chrome">
+      <div class="progress" style="--at:41%">
+        <span>1:42</span><div class="progress__bar" role="progressbar" aria-label="Position" aria-valuemin="0" aria-valuemax="247" aria-valuenow="102"></div><span>4:07</span>
+      </div>
+      <div class="transport">
+        <button type="button" aria-label="Previous track" data-action="prev"><svg viewBox="0 0 24 24"><path d="M5 4h2.5v16H5zM20 4v16L9 12z"/></svg></button>
+        <button type="button" class="transport__play" aria-label="Pause" data-action="play-pause">
+          <svg class="icon-pause" viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+          <svg class="icon-play" viewBox="0 0 24 24"><path d="M7 3.5v17L20.5 12z"/></svg>
+        </button>
+        <button type="button" aria-label="Next track" data-action="next"><svg viewBox="0 0 24 24"><path d="M16.5 4H19v16h-2.5zM4 4v16l11-8z"/></svg></button>
+      </div>
+    </div>
+  </section>
+
+  <section class="lyrics" aria-label="Lyrics">
+    <!-- --shift is the offset that keeps the current line's top at 32vh; the wiring JS measures it -->
+    <ol class="lyrics__track" style="--shift: 5.8vh" aria-live="off">
+      <li class="lyrics__line" data-at="-1">Leave the porch light on for the tide</li>
+      <li class="lyrics__line" data-at="0" aria-current="true">I'm counting streetlamps back to you</li>
+      <li class="lyrics__line" data-at="1">Every window holds a different weather</li>
+      <li class="lyrics__line" data-at="2">And the radio hums what it can't say</li>
+      <li class="lyrics__line" data-at="3">Slow water, carry the evening through</li>
+    </ol>
+    <p class="lyrics__state lyrics__state--loading" role="status">Looking up lyrics…</p>
+    <p class="lyrics__state lyrics__state--none" role="status">No synced lyrics for this track.</p>
+  </section>
+
+  <p class="toast" role="status">Visualizer: Mirror</p>
+</main>
+
+<script src="mockup.js"></script>
+<script>
+/* MOCKUP ONLY */
+if (document.body.dataset.long) {
+  document.querySelector('.player__title').textContent = 'The Long Way Round the Reservoir (Night Version, 2019 Remaster) [feat. The Quiet Arithmetic Ensemble]';
+  document.querySelector('.player__artist').textContent = 'Okono Vale & The Quiet Arithmetic Ensemble with the Harbour Light Community Choir and Friends';
+  document.querySelector('.lyrics__line[data-at="0"]').textContent = "I'm counting every streetlamp on the long road back to you, and losing count somewhere past the reservoir";
+}
+if (document.body.dataset.track === 'nothing') {
+  document.querySelector('.player__title').textContent = 'Nothing playing';
+  document.querySelector('.player__artist').textContent = 'Start a track in any player and it shows up here.';
+}
+</script>
+</body>
+</html>

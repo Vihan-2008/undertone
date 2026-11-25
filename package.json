@@ -1,0 +1,54 @@
+{
+  "name": "undertone",
+  "productName": "Undertone",
+  "version": "0.1.0",
+  "description": "A music visualizer that lives on your Windows wallpaper.",
+  "main": "src/main/main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "icon": "node scripts/make-icon.js",
+    "dist": "node scripts/make-icon.js && electron-builder --win nsis",
+    "dist:dir": "node scripts/make-icon.js && electron-builder --win dir"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^45.4.1",
+    "electron-builder": "^26.18.0"
+  },
+  "dependencies": {
+    "koffi": "^3.3.8"
+  },
+  "author": "Undertone",
+  "build": {
+    "appId": "app.undertone",
+    "productName": "Undertone",
+    "copyright": "Undertone",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "src/main/media-helper.ps1",
+      "node_modules/koffi/**"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "runAfterFinish": true,
+      "createDesktopShortcut": false,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Undertone"
+    }
+  }
+}

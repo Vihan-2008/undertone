@@ -1,0 +1,2 @@
+/* The desktop clock window: the clock sits 44 px in, so its shadow fits inside the window. */
+.desk .clock { position: absolute; left: 44px; top: 44px; }

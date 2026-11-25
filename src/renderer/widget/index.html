@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; media-src 'self' blob:">
+<title>Undertone visualizer</title>
+<link rel="stylesheet" href="../shared/tokens.css">
+<link rel="stylesheet" href="../shared/base.css">
+<link rel="stylesheet" href="widget.css">
+</head>
+<!-- The visualizer widget: a transparent window on the wallpaper layer (DESIGN.md 3).
+     The window is the widget's bounds plus a margin, so the ink wash can fade out inside it.
+     State on <body>: data-np  compact | centred | cover | text | off
+                      data-backdrop  on (backdrop above 0) -->
+<body class="desk" data-np="compact">
+  <section class="widget">
+    <div class="widget__backdrop"></div>
+    <div class="widget__albumglow"></div>
+    <div class="viz"></div>
+    <div class="np" hidden>
+      <img class="np__cover" alt="">
+      <div class="np__text">
+        <div class="np__title"></div>
+        <div class="np__artist"></div>
+      </div>
+    </div>
+  </section>
+  <script type="module" src="widget.js"></script>
+</body>
+</html>

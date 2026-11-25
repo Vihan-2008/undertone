@@ -1,0 +1,71 @@
+/* Clock faces, shared by the desktop clock and the settings preview (DESIGN.md 5.1).
+   State on .clock: data-face, data-fill solid | gradient | match, data-align, data-shade. --size is clock.size. */
+.clock {
+  --size: 96px;
+  --c1: var(--paper); --c2: var(--paper);
+  --shadow: 0 1px 2px rgba(0,0,0,.6), 0 2px 12px rgba(0,0,0,.45), 0 0 40px rgba(0,0,0,.35);
+  --drop: drop-shadow(0 1px 2px rgba(0,0,0,.6)) drop-shadow(0 2px 12px rgba(0,0,0,.45));
+  width: max-content;
+  color: var(--c1); font-family: var(--font-instrument); font-variant-numeric: tabular-nums;
+  font-weight: 300; text-align: right; white-space: nowrap; line-height: 1;
+}
+.clock[data-shade="light"] {
+  --shadow: 0 1px 2px rgba(255,255,255,.7), 0 2px 12px rgba(255,255,255,.5), 0 0 40px rgba(255,255,255,.4);
+  --drop: drop-shadow(0 1px 2px rgba(255,255,255,.7)) drop-shadow(0 2px 12px rgba(255,255,255,.5));
+}
+.clock[data-shade="none"] { --shadow: none; --drop: none; }
+.clock[data-align="left"] { text-align: left; }
+.clock[data-align="center"] { text-align: center; }
+
+.clock__time, .clock__date { text-shadow: var(--shadow); }
+.clock__time { font-size: var(--size); line-height: .9; letter-spacing: var(--tracking, 0); }
+.clock__sec { font-size: .45em; margin-left: .12em; opacity: .7; }
+.clock__date { margin-top: calc(var(--size) * .1); font-size: max(13px, calc(var(--size) * .19)); font-weight: 400; letter-spacing: 0; }
+
+/* gradient fills paint the text with a background, so the shadow moves to a filter */
+.clock[data-fill="gradient"] .clock__time,
+.clock[data-fill="match"] .clock__time {
+  background: linear-gradient(var(--c1), var(--c2)); -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; text-shadow: none; filter: var(--drop);
+}
+.clock[data-fill="gradient"] .clock__date,
+.clock[data-fill="match"] .clock__date { color: var(--c1); }
+
+/* stacked: hours over minutes */
+.clock__face--stacked .clock__time { line-height: .84; }
+.clock__face--stacked .clock__time span { display: block; }
+.clock__face--stacked .clock__min { opacity: .6; }
+.clock[data-fill="gradient"] .clock__face--stacked .clock__time,
+.clock[data-fill="match"] .clock__face--stacked .clock__time { background: none; -webkit-text-fill-color: currentColor; filter: none; text-shadow: var(--shadow); }
+.clock[data-fill="gradient"] .clock__face--stacked .clock__min,
+.clock[data-fill="match"] .clock__face--stacked .clock__min { color: var(--c2); opacity: 1; }
+
+/* minimal */
+.clock__face--minimal .clock__time { letter-spacing: calc(.06em + var(--tracking, 0em)); word-spacing: -.1em; }
+
+/* analog: dial 2 S across */
+.clock__face--analog { display: inline-flex; flex-direction: column; align-items: center; }
+.clock__dial { display: block; width: calc(var(--size) * 2); height: calc(var(--size) * 2); overflow: visible; filter: var(--drop); }
+.clock__face--analog .clock__date { text-align: center; }
+
+/* words */
+.clock__face--words .clock__time { font-size: calc(var(--size) * .5); line-height: 1.08; }
+.clock__face--words .clock__time span { display: block; }
+
+/* day line: 5 S wide. Time centred above the marker, date at one end of the line */
+.clock__face--line { width: calc(var(--size) * 5); text-align: left; }
+.clock__row { position: relative; height: calc(var(--size) * .34); margin-bottom: 10px; }
+.clock__row .clock__date { position: absolute; left: 0; bottom: 0; margin: 0; line-height: 1; }
+.clock__row .clock__date.is-right { left: auto; right: 0; }
+.clock__row .clock__time { position: absolute; bottom: 0; font-size: calc(var(--size) * .34); font-weight: 400; line-height: 1; transform: translateX(-50%); }
+.clock__rule { position: relative; height: 13px; filter: var(--drop); }
+.clock__rule::before { content: ""; position: absolute; left: 0; right: 0; top: 6px; height: 1px; background: var(--c1); }
+.clock__tick { position: absolute; top: 3px; width: 1px; height: 7px; margin-left: -.5px; background: var(--c1); opacity: .9; }
+.clock__tick:first-child { margin-left: 0; }
+.clock__tick:nth-child(5) { margin-left: -1px; }
+.clock__now { position: absolute; top: -3px; width: 2px; height: 19px; margin-left: -1px; background: var(--c2); }
+
+/* Day line: the fill colours only the time; the date, line and ticks stay in the clock colour. */
+.clock .clock__face--line .clock__date { color: var(--ca, var(--c1)); }
+.clock .clock__face--line .clock__rule::before,
+.clock .clock__face--line .clock__tick { background: var(--ca, var(--c1)); }

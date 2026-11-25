@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Undertone</title>
+<meta name="viewport" content="width=960">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="settings.css">
+</head>
+<!--
+  Settings window, 960 x 680 (shorter on small screens, see DESIGN.md 7.1).
+  State lives in data-* attributes on <body>; the wiring JS sets them:
+    data-tab     visualizer | clock | lyrics | audio | system
+    data-status  playing | idle | silent | source-failed | covered | hidden
+    data-lyrics  ready | loading | none | failed | off | idle
+  Every control carries data-setting="<key>" matching DESIGN.md section 9.
+  Mockup URLs: settings.html?tab=audio&status=source-failed
+-->
+<body class="app" data-tab="visualizer" data-status="playing" data-lyrics="ready">
+
+<header class="titlebar">
+  <h1 class="titlebar__name">Undertone</h1>
+  <div class="tabs" role="tablist" aria-label="Settings">
+    <button class="tab" role="tab" id="tab-visualizer" aria-controls="panel-visualizer" aria-selected="true">Visualizer</button>
+    <button class="tab" role="tab" id="tab-clock" aria-controls="panel-clock" aria-selected="false" tabindex="-1">Clock</button>
+    <button class="tab" role="tab" id="tab-lyrics" aria-controls="panel-lyrics" aria-selected="false" tabindex="-1">Lyrics</button>
+    <button class="tab" role="tab" id="tab-audio" aria-controls="panel-audio" aria-selected="false" tabindex="-1">Audio</button>
+    <button class="tab" role="tab" id="tab-system" aria-controls="panel-system" aria-selected="false" tabindex="-1">System<span class="mark" aria-label="needs attention" hidden>!</span></button>
+  </div>
+  <!-- mockup stand-in for the native caption buttons (titleBarOverlay). Delete when wiring. -->
+  <div class="titlebar__caption" aria-hidden="true"><span>&#xE921;</span><span>&#xE922;</span><span>&#xE8BB;</span></div>
+</header>
+
+<main class="body">
+
+  <!-- Live preview. Always visible; what it shows follows the tab. -->
+  <div class="preview wallpaper" data-over="wallpaper" aria-label="Live preview">
+    <div class="seg seg--small preview__over" role="radiogroup" aria-label="Preview over">
+      <label class="seg__opt"><input type="radio" name="preview.over" value="wallpaper" checked><span>Wallpaper</span></label>
+      <label class="seg__opt"><input type="radio" name="preview.over" value="dark"><span>Dark</span></label>
+      <label class="seg__opt"><input type="radio" name="preview.over" value="light"><span>Light</span></label>
+    </div>
+
+    <canvas class="preview__viz" data-viz="bars" data-theme="ember"></canvas>
+    <div class="preview__np">
+      <div class="preview__np-cover cover-art"></div>
+      <div class="preview__np-text">
+        <div class="preview__np-title">Salt Lines</div>
+        <div class="preview__np-artist">Okono Vale</div>
+      </div>
+    </div>
+
+    <div class="preview__clock">
+      <div class="preview__clock-time">21:47</div>
+      <div class="preview__clock-date">Tue 24 Nov</div>
+    </div>
+
+    <div class="preview__player">
+      <div class="preview__player-light cover-art"></div>
+      <div class="preview__player-cover cover-art"></div>
+      <ol class="preview__player-lyrics">
+        <li>Leave the porch light on for the tide</li>
+        <li aria-current="true">I'm counting streetlamps back to you</li>
+        <li>Every window holds a different weather</li>
+        <li>And the radio hums what it can't say</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ============================ VISUALIZER ============================ -->
+  <section class="panel" id="panel-visualizer" role="tabpanel" aria-labelledby="tab-visualizer">
+    <div class="panel__pick">
+      <h2 class="pick__title" id="style-title">Style</h2>
+      <div class="style-grid" role="radiogroup" aria-labelledby="style-title" data-setting="visualizer.style">
+        <label class="style-tile"><input type="radio" name="visualizer.style" value="bars" checked><canvas class="style-tile__thumb" data-viz="bars"></canvas><span class="style-tile__name">Bars</span></label>
+        <label class="style-tile"><input type="radio" name="visualizer.style" value="mirror"><canvas class="style-tile__thumb" data-viz="mirror"></canvas><span class="style-tile__name">Mirror</span></label>
+        <label class="style-tile"><input type="radio" name="visualizer.style" value="blocks"><canvas class="style-tile__thumb" data-viz="blocks"></canvas><span class="style-tile__name">Blocks</span></label>
+        <label class="style-tile"><input type="radio" name="visualizer.style" value="ring"><canvas class="style-tile__thumb" data-viz="ring"></canvas><span class="style-tile__name">Ring</span></label>
+        <label class="style-tile"><input type="radio" name="visualizer.style" value="wave"><canvas class="style-tile__thumb" data-viz="wave"></canvas><span class="style-tile__name">Wave</span></label>
+        <label class="style-tile"><input type="radio" name="visualizer.style" value="aurora"><canvas class="style-tile__thumb" data-viz="aurora"></canvas><span class="style-tile__name">Aurora</span></label>
+        <label class="style-tile"><input type="radio" name="visualizer.style" value="orb"><canvas class="style-tile__thumb" data-viz="orb"></canvas><span class="style-tile__name">Orb</span></label>
+        <label class="style-tile"><input type="radio" name="visualizer.style" value="waterfall"><canvas class="style-tile__thumb" data-viz="waterfall"></canvas><span class="style-tile__name">Waterfall</span></label>
+        <label class="style-tile"><input type="radio" name="visualizer.style" value="particles"><canvas class="style-tile__thumb" data-viz="particles"></canvas><span class="style-tile__name">Particles</span></label>
+        <label class="style-tile"><input type="radio" name="visualizer.style" value="terrain"><canvas class="style-tile__thumb" data-viz="terrain"></canvas><span class="style-tile__name">Terrain</span></label>
+        <label class="style-tile"><input type="radio" name="visualizer.style" value="meters"><canvas class="style-tile__thumb" data-viz="meters"></canvas><span class="style-tile__name">Meters</span></label>
+      </div>
+    </div>
+
+    <div class="panel__tune">
+      <section class="group">
+        <h2 class="group__title" id="colours-title">Colours</h2>
+        <div class="swatches" role="radiogroup" aria-labelledby="colours-title" data-setting="visualizer.theme">
+          <label class="swatch"><input type="radio" name="visualizer.theme" value="ember" checked><span class="swatch__chip" style="--a:#7a1e0a;--b:#eb4a22;--c:#ffc27a"></span><span class="swatch__name">Ember</span></label>
+          <label class="swatch"><input type="radio" name="visualizer.theme" value="paper"><span class="swatch__chip" style="--a:#6f6b64;--b:#cfcac0;--c:#ffffff"></span><span class="swatch__name">Paper</span></label>
+          <label class="swatch"><input type="radio" name="visualizer.theme" value="tide"><span class="swatch__chip" style="--a:#0e3b5c;--b:#1f9ec9;--c:#b8f1ff"></span><span class="swatch__name">Tide</span></label>
+          <label class="swatch"><input type="radio" name="visualizer.theme" value="moss"><span class="swatch__chip" style="--a:#1f4d2e;--b:#6fbf4a;--c:#e6f58a"></span><span class="swatch__name">Moss</span></label>
+          <label class="swatch"><input type="radio" name="visualizer.theme" value="sodium"><span class="swatch__chip" style="--a:#5c3b00;--b:#f2a413;--c:#fff1b0"></span><span class="swatch__name">Sodium</span></label>
+          <label class="swatch"><input type="radio" name="visualizer.theme" value="prism"><span class="swatch__chip" style="--a:#2b6bff;--b:#e0457b;--c:#ffc94a"></span><span class="swatch__name">Prism</span></label>
+          <label class="swatch"><input type="radio" name="visualizer.theme" value="custom"><span class="swatch__chip" style="--a:#12456b;--b:#3b8fd9;--c:#c4e4ff"></span><span class="swatch__name">Custom</span></label>
+          <label class="swatch"><input type="radio" name="visualizer.theme" value="cover"><span class="swatch__chip" style="--a:#0f2f3a;--b:#2d7d86;--c:#f3d9a4"></span><span class="swatch__name">From cover</span></label>
+        </div>
+        <!-- shown only when theme = custom -->
+        <div class="row" id="row-custom-accent" hidden>
+          <label class="row__label" for="visualizer-custom-accent">Accent</label>
+          <div class="row__control row__control--full">
+            <input class="well" type="color" id="visualizer-custom-accent" data-setting="visualizer.customAccent" value="#3b8fd9">
+            <input class="hexfield" type="text" aria-label="Accent hex" value="#3B8FD9" maxlength="7" spellcheck="false">
+          </div>
+        </div>
+        <!-- shown only when theme = cover -->
+        <p class="note" id="note-cover" hidden>Colours follow each track's cover. A cover with no colour uses Paper.</p>
+      </section>
+
+      <section class="group">
+        <h2 class="group__title">Shape</h2>
+        <div class="row">
+          <label class="row__label" for="visualizer-density">Density</label>
+          <div class="row__control"><input class="slider" type="range" id="visualizer-density" data-setting="visualizer.density" min="0" max="100" step="1" value="50" style="--fill:50%"></div>
+          <output class="row__value" for="visualizer-density">50</output>
+        </div>
+        <div class="row">
+          <label class="row__label" for="visualizer-sensitivity">Sensitivity</label>
+          <div class="row__control"><input class="slider" type="range" id="visualizer-sensitivity" data-setting="audio.sensitivity" min="0" max="200" step="5" value="100" style="--fill:50%"></div>
+          <output class="row__value" for="visualizer-sensitivity">100%</output>
+        </div>
+        <div class="row">
+          <label class="row__label" for="visualizer-glow">Glow</label>
+          <div class="row__control"><input class="slider" type="range" id="visualizer-glow" data-setting="visualizer.glow" min="0" max="100" step="1" value="40" style="--fill:40%"></div>
+          <output class="row__value" for="visualizer-glow">40</output>
+        </div>
+        <div class="row">
+          <label class="row__label" for="visualizer-backdrop">Backdrop</label>
+          <div class="row__control"><input class="slider" type="range" id="visualizer-backdrop" data-setting="visualizer.backdrop" min="0" max="100" step="1" value="0" style="--fill:0%"></div>
+          <output class="row__value" for="visualizer-backdrop">Off</output>
+        </div>
+        <div class="row">
+          <label class="row__label" for="visualizer-opacity">Opacity</label>
+          <div class="row__control"><input class="slider" type="range" id="visualizer-opacity" data-setting="visualizer.opacity" min="20" max="100" step="1" value="100" style="--fill:100%"></div>
+          <output class="row__value" for="visualizer-opacity">100%</output>
+        </div>
+      </section>
+
+      <section class="group">
+        <h2 class="group__title">Now playing</h2>
+        <div class="row">
+          <label class="row__label" for="now-playing-layout">Layout</label>
+          <div class="row__control row__control--full">
+            <select class="select" id="now-playing-layout" data-setting="nowPlaying.layout">
+              <option value="compact" selected>Compact</option>
+              <option value="centred">Centred</option>
+              <option value="cover">Cover</option>
+              <option value="text">Text only</option>
+              <option value="off">Off</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <label class="row__label" for="visualizer-album-glow">Album glow</label>
+          <div class="row__control"><input class="switch" type="checkbox" role="switch" id="visualizer-album-glow" data-setting="visualizer.albumGlow"></div>
+          <output class="row__value" for="visualizer-album-glow">Off</output>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <!-- ============================== CLOCK =============================== -->
+  <section class="panel" id="panel-clock" role="tabpanel" aria-labelledby="tab-clock">
+    <div class="panel__pick">
+      <h2 class="pick__title" id="face-title">Face</h2>
+      <div class="face-grid" role="radiogroup" aria-labelledby="face-title" data-setting="clock.face">
+        <label class="face-tile"><input type="radio" name="clock.face" value="digital" checked><span class="face-tile__thumb"><span class="mini-digital"><b>21:47</b><i>Tue 24 Nov</i></span></span><span class="face-tile__name">Digital</span></label>
+        <label class="face-tile"><input type="radio" name="clock.face" value="stacked"><span class="face-tile__thumb"><span class="mini-stacked"><b>21</b><b>47</b></span></span><span class="face-tile__name">Stacked</span></label>
+        <label class="face-tile"><input type="radio" name="clock.face" value="minimal"><span class="face-tile__thumb"><span class="mini-minimal">21 47</span></span><span class="face-tile__name">Minimal</span></label>
+        <label class="face-tile"><input type="radio" name="clock.face" value="analog"><span class="face-tile__thumb">
+          <svg width="64" height="64" viewBox="-32 -32 64 64" fill="none" stroke="currentColor" aria-hidden="true">
+            <g stroke-width="1.5"><path d="M0-30v5M0 30v-5M30 0h-5M-30 0h5"/></g>
+            <path d="M0 0L-11.4-10.3" stroke-width="2.5"/><path d="M0 0L-23.8-7.7" stroke-width="1.5"/>
+            <circle r="1.6" fill="currentColor" stroke="none"/>
+          </svg></span><span class="face-tile__name">Analog</span></label>
+        <label class="face-tile"><input type="radio" name="clock.face" value="words"><span class="face-tile__thumb"><span class="mini-words">quarter<br>to ten</span></span><span class="face-tile__name">Words</span></label>
+        <label class="face-tile"><input type="radio" name="clock.face" value="line"><span class="face-tile__thumb"><span class="mini-line"><b>21:47</b><span></span></span></span><span class="face-tile__name">Day line</span></label>
+      </div>
+    </div>
+
+    <div class="panel__tune">
+      <section class="group">
+        <div class="row">
+          <label class="row__label" for="clock-enabled">Show clock</label>
+          <div class="row__control"><input class="switch" type="checkbox" role="switch" id="clock-enabled" data-setting="clock.enabled" checked></div>
+          <output class="row__value" for="clock-enabled">On</output>
+        </div>
+      </section>
+
+      <section class="group">
+        <h2 class="group__title">Type</h2>
+        <div class="row">
+          <label class="row__label" for="clock-font">Font</label>
+          <div class="row__control row__control--full">
+            <select class="select" id="clock-font" data-setting="clock.font">
+              <option value="Bahnschrift" selected>Bahnschrift</option>
+              <option value="Segoe UI Variable Display">Segoe UI</option>
+              <option value="Sitka Display">Sitka</option>
+              <option value="Georgia">Georgia</option>
+              <option value="Cambria">Cambria</option>
+              <option value="Cascadia Mono">Cascadia Mono</option>
+              <option value="Consolas">Consolas</option>
+              <option value="Impact">Impact</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <label class="row__label" for="clock-size">Size</label>
+          <div class="row__control"><input class="slider" type="range" id="clock-size" data-setting="clock.size" min="24" max="320" step="2" value="96" style="--fill:24.3%"></div>
+          <output class="row__value" for="clock-size">96 px</output>
+        </div>
+        <div class="row">
+          <label class="row__label" for="clock-weight">Weight</label>
+          <div class="row__control"><input class="slider" type="range" id="clock-weight" data-setting="clock.weight" min="100" max="900" step="100" value="300" style="--fill:25%"></div>
+          <output class="row__value" for="clock-weight">Light</output>
+        </div>
+        <div class="row">
+          <label class="row__label" for="clock-letter-spacing">Letter spacing</label>
+          <div class="row__control"><input class="slider" type="range" id="clock-letter-spacing" data-setting="clock.letterSpacing" min="-5" max="30" step="1" value="0" style="--fill:14.3%"></div>
+          <output class="row__value" for="clock-letter-spacing">0</output>
+        </div>
+      </section>
+
+      <section class="group">
+        <h2 class="group__title" id="clock-colour-title">Colour</h2>
+        <div class="row">
+          <span class="row__label" id="clock-colour-mode-label">Fill</span>
+          <div class="row__control row__control--full">
+            <div class="seg" role="radiogroup" aria-labelledby="clock-colour-mode-label" data-setting="clock.colourMode">
+              <label class="seg__opt"><input type="radio" name="clock.colourMode" value="solid" checked><span>Solid</span></label>
+              <label class="seg__opt"><input type="radio" name="clock.colourMode" value="gradient"><span>Gradient</span></label>
+              <label class="seg__opt"><input type="radio" name="clock.colourMode" value="visualizer"><span>Match visualizer</span></label>
+            </div>
+          </div>
+        </div>
+        <!-- hidden when Fill = Match visualizer. Second well + hex shown only when Fill = Gradient. -->
+        <div class="row" id="row-clock-colours">
+          <label class="row__label" for="clock-colour-a">Colour</label>
+          <div class="row__control row__control--full">
+            <input class="well" type="color" id="clock-colour-a" data-setting="clock.colourA" value="#efebe2">
+            <input class="hexfield" type="text" aria-label="Colour hex" value="#EFEBE2" maxlength="7" spellcheck="false">
+            <input class="well" type="color" id="clock-colour-b" data-setting="clock.colourB" value="#eb4a22" aria-label="Second colour" hidden>
+            <input class="hexfield" type="text" aria-label="Second colour hex" value="#EB4A22" maxlength="7" spellcheck="false" hidden>
+          </div>
+        </div>
+        <div class="row">
+          <label class="row__label" for="clock-opacity">Opacity</label>
+          <div class="row__control"><input class="slider" type="range" id="clock-opacity" data-setting="clock.opacity" min="20" max="100" step="1" value="100" style="--fill:100%"></div>
+          <output class="row__value" for="clock-opacity">100%</output>
+        </div>
+        <div class="row">
+          <label class="row__label" for="clock-shadow">Shadow</label>
+          <div class="row__control"><input class="switch" type="checkbox" role="switch" id="clock-shadow" data-setting="clock.shadow" checked></div>
+          <output class="row__value" for="clock-shadow">On</output>
+        </div>
+      </section>
+
+      <section class="group">
+        <h2 class="group__title">Time and date</h2>
+        <div class="row">
+          <label class="row__label" for="clock-hour24">24-hour</label>
+          <div class="row__control"><input class="switch" type="checkbox" role="switch" id="clock-hour24" data-setting="clock.hour24" checked></div>
+          <output class="row__value" for="clock-hour24">On</output>
+        </div>
+        <div class="row">
+          <label class="row__label" for="clock-seconds">Seconds</label>
+          <div class="row__control"><input class="switch" type="checkbox" role="switch" id="clock-seconds" data-setting="clock.seconds"></div>
+          <output class="row__value" for="clock-seconds">Off</output>
+        </div>
+        <div class="row">
+          <span class="row__label" id="clock-date-label">Date</span>
+          <div class="row__control row__control--full">
+            <div class="seg" role="radiogroup" aria-labelledby="clock-date-label" data-setting="clock.date">
+              <label class="seg__opt"><input type="radio" name="clock.date" value="long"><span>Long</span></label>
+              <label class="seg__opt"><input type="radio" name="clock.date" value="short" checked><span>Short</span></label>
+              <label class="seg__opt"><input type="radio" name="clock.date" value="none"><span>None</span></label>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <!-- ============================== LYRICS ============================== -->
+  <section class="panel" id="panel-lyrics" role="tabpanel" aria-labelledby="tab-lyrics">
+    <div class="panel__pick">
+      <h2 class="pick__title">This track <span class="pick__aside">Salt Lines, Okono Vale</span></h2>
+      <ol class="lyric-peek" aria-live="off">
+        <li><time>1:36</time><span>Leave the porch light on for the tide</span></li>
+        <li aria-current="true"><time>1:42</time><span>I'm counting streetlamps back to you</span></li>
+        <li><time>1:49</time><span>Every window holds a different weather</span></li>
+        <li><time>1:55</time><span>And the radio hums what it can't say</span></li>
+        <li><time>2:02</time><span>Slow water, carry the evening through</span></li>
+      </ol>
+      <p class="lyric-state lyric-state--loading" role="status">Looking up lyrics…</p>
+      <p class="lyric-state lyric-state--none" role="status">No synced lyrics found for this track. The full-screen player shows the cover on its own.</p>
+      <p class="lyric-state lyric-state--failed" role="status">Couldn't reach lrclib.net. Undertone will try again on the next track.</p>
+      <p class="lyric-state lyric-state--off">Lyrics are off. Nothing is looked up.</p>
+      <p class="lyric-state lyric-state--idle">Nothing is playing. Lyrics appear here when a track starts.</p>
+    </div>
+
+    <div class="panel__tune">
+      <section class="group">
+        <div class="row">
+          <label class="row__label" for="lyrics-enabled">Show lyrics</label>
+          <div class="row__control"><input class="switch" type="checkbox" role="switch" id="lyrics-enabled" data-setting="lyrics.enabled" aria-describedby="lyrics-disclosure" checked></div>
+          <output class="row__value" for="lyrics-enabled">On</output>
+        </div>
+        <p class="note" id="lyrics-disclosure">Looks up lyrics on lrclib.net using the song title and artist.</p>
+      </section>
+
+      <section class="group">
+        <h2 class="group__title">In the full-screen player</h2>
+        <div class="row">
+          <label class="row__label" for="lyrics-offset">Offset</label>
+          <div class="row__control"><input class="slider" type="range" id="lyrics-offset" data-setting="lyrics.offset" min="-5000" max="5000" step="100" value="0" style="--fill:50%" aria-describedby="lyrics-offset-note"></div>
+          <output class="row__value" for="lyrics-offset">0.0 s</output>
+        </div>
+        <p class="note note--row" id="lyrics-offset-note">Lines too early? Move right. Too late? Move left.</p>
+        <div class="row">
+          <span class="row__label" id="lyrics-size-label">Size</span>
+          <div class="row__control row__control--full">
+            <div class="seg" role="radiogroup" aria-labelledby="lyrics-size-label" data-setting="lyrics.size">
+              <label class="seg__opt"><input type="radio" name="lyrics.size" value="small"><span>Small</span></label>
+              <label class="seg__opt"><input type="radio" name="lyrics.size" value="medium" checked><span>Medium</span></label>
+              <label class="seg__opt"><input type="radio" name="lyrics.size" value="large"><span>Large</span></label>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <!-- ============================== AUDIO =============================== -->
+  <section class="panel" id="panel-audio" role="tabpanel" aria-labelledby="tab-audio">
+    <div class="panel__pick">
+      <h2 class="pick__title">Level <span class="pick__aside" id="meter-source">System audio</span></h2>
+      <div class="meter" role="img" aria-label="Input level, left -9 dB, right -11 dB">
+        <span class="meter__ch">L</span>
+        <div class="meter__bar" style="--level:74%;--peak:86%"><div class="meter__fill"></div><div class="meter__peak"></div></div>
+        <span class="meter__db">-9 dB</span>
+        <span class="meter__ch">R</span>
+        <div class="meter__bar" style="--level:68%;--peak:82%"><div class="meter__fill"></div><div class="meter__peak"></div></div>
+        <span class="meter__db">-11 dB</span>
+        <div class="meter__scale" aria-hidden="true"><span>-60</span><span>-48</span><span>-36</span><span>-24</span><span>-12</span><span>0</span></div>
+      </div>
+      <p class="meter-caption">Undertone listens to what this PC plays. It never opens a microphone or any other input unless you pick one in the list.</p>
+    </div>
+
+    <div class="panel__tune">
+      <section class="group">
+        <h2 class="group__title" id="source-title">Source</h2>
+        <fieldset class="sources" role="radiogroup" aria-labelledby="source-title" data-setting="audio.source">
+          <label class="source">
+            <input type="radio" name="audio.source" value="system" checked>
+            <span class="source__name">System audio</span>
+            <span class="source__sub">Everything this PC plays</span>
+          </label>
+          <div class="sources__head">Input devices</div>
+          <label class="source">
+            <input type="radio" name="audio.source" value="dev-1">
+            <span class="source__name" title="Microphone Array (Realtek(R) Audio)">Microphone Array (Realtek(R) Audio)</span>
+          </label>
+          <label class="source" data-state="failed">
+            <input type="radio" name="audio.source" value="dev-2">
+            <span class="source__name" title="Analogue 1 + 2 (Focusrite Scarlett 2i2 USB Audio Device)">Analogue 1 + 2 (Focusrite Scarlett 2i2 USB Audio Device)</span>
+            <span class="source__problem problem"><span class="mark" aria-hidden="true">!</span><span>Couldn't open this device. Using System audio.</span><button class="btn btn--quiet" type="button">Try again</button></span>
+          </label>
+          <label class="source">
+            <input type="radio" name="audio.source" value="dev-3">
+            <span class="source__name" title="Stereo Mix (Realtek(R) Audio)">Stereo Mix (Realtek(R) Audio)</span>
+          </label>
+          <div class="source__empty">No input devices found.</div>
+        </fieldset>
+      </section>
+
+      <section class="group">
+        <h2 class="group__title">Response</h2>
+        <div class="row">
+          <label class="row__label" for="audio-sensitivity">Sensitivity</label>
+          <div class="row__control"><input class="slider" type="range" id="audio-sensitivity" data-setting="audio.sensitivity" min="0" max="200" step="5" value="100" style="--fill:50%"></div>
+          <output class="row__value" for="audio-sensitivity">100%</output>
+        </div>
+        <div class="row">
+          <label class="row__label" for="audio-smoothing">Smoothing</label>
+          <div class="row__control"><input class="slider" type="range" id="audio-smoothing" data-setting="audio.smoothing" min="0" max="100" step="1" value="60" style="--fill:60%"></div>
+          <output class="row__value" for="audio-smoothing">60</output>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <!-- ============================== SYSTEM ============================== -->
+  <section class="panel" id="panel-system" role="tabpanel" aria-labelledby="tab-system">
+    <div class="panel__pick">
+      <h2 class="pick__title">Hotkeys <span class="pick__aside">Select one to change it</span></h2>
+      <ul class="hotkeys">
+        <li class="hotkey-row">
+          <span id="hk-fullscreen">Full-screen player</span>
+          <button class="hotkey" type="button" aria-labelledby="hk-fullscreen" data-setting="hotkeys.fullscreen"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>F</kbd><span class="hotkey__prompt">Press keys… Esc cancels</span><span class="hotkey__none">None</span></button>
+        </li>
+        <li class="hotkey-row" data-state="conflict">
+          <span id="hk-arrange">Arrange widgets</span>
+          <button class="hotkey" type="button" aria-labelledby="hk-arrange" aria-describedby="hk-arrange-problem" data-setting="hotkeys.arrange"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>A</kbd><span class="hotkey__prompt">Press keys… Esc cancels</span><span class="hotkey__none">None</span></button>
+          <span class="hotkey-row__problem problem" id="hk-arrange-problem"><span class="mark" aria-hidden="true">!</span><span>Another app is using Ctrl+Alt+A. Select it to choose different keys.</span></span>
+        </li>
+        <li class="hotkey-row">
+          <span id="hk-toggle">Show or hide widgets</span>
+          <button class="hotkey" type="button" aria-labelledby="hk-toggle" data-setting="hotkeys.toggleWidgets"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>H</kbd><span class="hotkey__prompt">Press keys… Esc cancels</span><span class="hotkey__none">None</span></button>
+        </li>
+        <li class="hotkey-row">
+          <span id="hk-next">Next visualizer style</span>
+          <button class="hotkey" type="button" aria-labelledby="hk-next" data-setting="hotkeys.nextStyle" data-state="capturing"><kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>V</kbd><span class="hotkey__prompt">Press keys… Esc cancels</span><span class="hotkey__none">None</span></button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="panel__tune">
+      <section class="group">
+        <h2 class="group__title">Startup</h2>
+        <div class="row">
+          <label class="row__label" for="system-launch-at-login">Launch at login</label>
+          <div class="row__control"><input class="switch" type="checkbox" role="switch" id="system-launch-at-login" data-setting="system.launchAtLogin"></div>
+          <output class="row__value" for="system-launch-at-login">Off</output>
+        </div>
+      </section>
+
+      <section class="group">
+        <h2 class="group__title">Performance</h2>
+        <div class="row">
+          <span class="row__label" id="system-fps-label">Frame rate cap</span>
+          <div class="row__control row__control--full">
+            <div class="seg" role="radiogroup" aria-labelledby="system-fps-label" data-setting="system.fpsCap">
+              <label class="seg__opt"><input type="radio" name="system.fpsCap" value="30"><span>30</span></label>
+              <label class="seg__opt"><input type="radio" name="system.fpsCap" value="60" checked><span>60</span></label>
+              <label class="seg__opt"><input type="radio" name="system.fpsCap" value="display"><span>Display rate</span></label>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <label class="row__label" for="system-pause-when-covered">Pause when covered</label>
+          <div class="row__control"><input class="switch" type="checkbox" role="switch" id="system-pause-when-covered" data-setting="system.pauseWhenCovered" aria-describedby="system-pause-note" checked></div>
+          <output class="row__value" for="system-pause-when-covered">On</output>
+        </div>
+        <p class="note note--row" id="system-pause-note">Stops drawing while a maximised or full-screen window hides the desktop.</p>
+      </section>
+
+      <section class="group">
+        <h2 class="group__title">Undertone</h2>
+        <div class="row">
+          <span class="row__label">Version</span>
+          <div class="row__control row__control--full"><span class="num" id="system-version">0.1.0</span></div>
+        </div>
+        <div class="row">
+          <span class="row__label">Settings</span>
+          <div class="row__control row__control--full">
+            <button class="btn" type="button" id="system-reset">Reset to defaults</button>
+            <span class="confirm" id="system-reset-confirm" role="alert" hidden>Reset every setting? <button class="btn" type="button" data-action="reset-confirm">Reset</button><button class="btn btn--quiet" type="button" data-action="reset-cancel">Keep</button></span>
+          </div>
+        </div>
+        <div class="row">
+          <span class="row__label">App</span>
+          <div class="row__control row__control--full"><button class="btn" type="button" id="system-quit">Quit Undertone</button></div>
+        </div>
+      </section>
+    </div>
+  </section>
+</main>
+
+<footer class="statusbar">
+  <div class="status status--playing" role="status">
+    <span class="status__level" aria-hidden="true"><i style="height:50%"></i><i style="height:100%"></i><i style="height:70%"></i><i style="height:35%"></i></span>
+    <span class="status__text"><b>Salt Lines</b> by Okono Vale</span>
+  </div>
+  <div class="status status--idle" role="status">
+    <span class="status__level" aria-hidden="true"><i style="height:40%"></i><i style="height:80%"></i><i style="height:55%"></i><i style="height:30%"></i></span>
+    <span class="status__text">Hearing audio. The player isn't sharing track details.</span>
+  </div>
+  <div class="status status--silent" role="status">
+    <span class="status__idle" aria-hidden="true"></span>
+    <span class="status__text">Silent. Nothing is coming through System audio.</span>
+  </div>
+  <div class="status status--source-failed" role="status">
+    <span class="mark" aria-hidden="true">!</span>
+    <span class="status__text"><b>Couldn't open Analogue 1 + 2 (Focusrite Scarlett 2i2 USB Audio Device).</b> Using System audio.</span>
+    <button class="btn btn--quiet" type="button" data-action="open-audio">Choose source</button>
+  </div>
+  <div class="status status--covered" role="status">
+    <span class="status__idle" aria-hidden="true"></span>
+    <span class="status__text">Paused while a full-size window covers the desktop.</span>
+  </div>
+  <div class="status status--hidden" role="status">
+    <span class="status__idle" aria-hidden="true"></span>
+    <span class="status__text">Widgets are hidden.</span>
+    <button class="btn btn--quiet" type="button" data-action="show-widgets">Show</button>
+  </div>
+  <div class="statusbar__actions">
+    <button class="btn btn--quiet" type="button" data-action="arrange">Arrange widgets</button>
+    <button class="btn btn--quiet" type="button" data-action="fullscreen">Full screen</button>
+  </div>
+</footer>
+
+<script src="mockup.js"></script>
+<script>
+/* MOCKUP ONLY: tab switching so each section can be reviewed. Replace with real wiring. */
+(function () {
+  const tabs = [...document.querySelectorAll('.tab')];
+  function select(name) {
+    document.body.dataset.tab = name;
+    tabs.forEach(t => { const on = t.id === 'tab-' + name; t.setAttribute('aria-selected', on); t.tabIndex = on ? 0 : -1; });
+    window.undertoneMockup.paintAll();
+  }
+  tabs.forEach((t, i) => {
+    t.addEventListener('click', () => select(t.id.slice(4)));
+    t.addEventListener('keydown', e => {
+      const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (d) { const n = tabs[(i + d + tabs.length) % tabs.length]; n.focus(); select(n.id.slice(4)); }
+    });
+  });
+  select(document.body.dataset.tab);
+  document.querySelectorAll('input[name="preview.over"]').forEach(r =>
+    r.addEventListener('change', () => { document.querySelector('.preview').dataset.over = r.value; }));
+  document.querySelectorAll('input[name="visualizer.theme"]').forEach(r => r.addEventListener('change', () => {
+    document.getElementById('row-custom-accent').hidden = r.value !== 'custom';
+    document.getElementById('note-cover').hidden = r.value !== 'cover';
+  }));
+})();
+</script>
+</body>
+</html>

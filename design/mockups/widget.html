@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Undertone on the desktop</title>
+<meta name="viewport" content="width=1920">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="desktop.css">
+</head>
+<!--
+  The two wallpaper widgets on a 1920 x 1080 desktop, and Arrange mode.
+  Mockup URLs:
+    widget.html                          default: Bars, Compact line, Digital clock
+    widget.html?mode=arrange             Arrange mode, visualizer selected, snapped to centre + bottom margin
+    widget.html?mode=first-run           first launch: Arrange mode with the teaching hint
+    widget.html?np=centred|cover|text|off
+    widget.html?face=stacked|minimal|analog|words|line
+    widget.html?backdrop=on   ?albumglow=on   ?audio=silent|idle   ?long=1
+  In the app each .widget is its own transparent, click-through window on the wallpaper layer.
+-->
+<body data-np="compact" data-face="digital">
+<div class="desktop wallpaper" data-fit="1920">
+
+  <div class="fake-icons" aria-hidden="true"><div>Projects</div><div>This PC</div><div>Recycle Bin</div><div>Mixdowns</div></div>
+  <div class="fake-taskbar" aria-hidden="true"></div>
+
+  <!-- Arrange mode chrome: one overlay window per display, above everything -->
+  <div class="arrange">
+    <div class="arrange__scrim"></div>
+    <div class="guide guide--v" aria-hidden="true"></div>
+    <div class="guide guide--h" aria-hidden="true"></div>
+    <div class="arrange-bar" role="toolbar" aria-label="Arrange widgets">
+      <span class="arrange-bar__name">Arranging</span>
+      <span class="arrange-bar__hint arrange-bar__hint--usual">Drag to move. Pull a corner to resize. Arrow keys nudge.</span>
+      <span class="arrange-bar__hint arrange-bar__hint--first">Drag to move. Pull a corner to resize. Ctrl+Alt+A brings this back any time.</span>
+      <span class="arrange-bar__actions">
+        <button type="button" data-action="centre">Centre</button>
+        <button type="button" data-action="reset">Reset</button>
+        <button type="button" class="arrange-bar__done" data-action="done">Done<kbd>Enter</kbd></button>
+      </span>
+    </div>
+  </div>
+
+  <!-- Visualizer + now playing -->
+  <section class="widget widget--viz is-selected" tabindex="0" aria-label="Visualizer, 640 by 220">
+    <div class="widget__backdrop"></div>
+    <div class="widget__albumglow"></div>
+    <canvas class="viz viz--live" data-viz="bars" data-theme="ember"></canvas>
+    <canvas class="viz viz--rest" data-viz="rest" data-theme="ember"></canvas>
+    <div class="np">
+      <div class="np__cover cover-art"></div>
+      <div class="np__text">
+        <div class="np__title">Salt Lines</div>
+        <div class="np__artist">Okono Vale</div>
+      </div>
+    </div>
+    <div class="readout"><b>Visualizer</b>640 × 220</div>
+    <span class="handle handle--nw"></span><span class="handle handle--ne"></span>
+    <span class="handle handle--sw"></span><span class="handle handle--se"></span>
+  </section>
+
+  <!-- Clock -->
+  <section class="widget widget--clock clock" tabindex="0" aria-label="Clock">
+    <div class="clock__face clock__face--digital">
+      <div class="clock__time">21:47</div>
+      <div class="clock__date">Tue 24 Nov</div>
+    </div>
+    <div class="clock__face clock__face--stacked">
+      <div class="clock__time"><span>21</span><span>47</span></div>
+      <div class="clock__date">Tue 24 Nov</div>
+    </div>
+    <div class="clock__face clock__face--minimal">
+      <div class="clock__time">21 47</div>
+    </div>
+    <div class="clock__face clock__face--analog">
+      <svg viewBox="-100 -100 200 200" fill="none" stroke="currentColor" aria-hidden="true">
+        <g stroke-width="2.5"><path d="M0-96v14M0 96v-14M96 0h-14M-96 0h14"/></g>
+        <g stroke-width="1.5" opacity=".85"><path d="M48-83.1l-4 6.9M83.1-48l-6.9 4M83.1 48l-6.9-4M48 83.1l-4-6.9M-48 83.1l4-6.9M-83.1 48l6.9-4M-83.1-48l6.9 4M-48-83.1l4 6.9"/></g>
+        <path d="M0 0L-38.6-34.8" stroke-width="5"/>
+        <path d="M0 0L-76.1-24.7" stroke-width="2.5"/>
+        <circle r="4" fill="currentColor" stroke="none"/>
+      </svg>
+      <div class="clock__date">Tue 24 Nov</div>
+    </div>
+    <div class="clock__face clock__face--words">
+      <div class="clock__time">quarter<br>to ten</div>
+      <div class="clock__date">Tue 24 Nov</div>
+    </div>
+    <div class="clock__face clock__face--line">
+      <div class="clock__date">Tue 24 Nov</div>
+      <div class="clock__time">21:47</div>
+      <div class="clock__rule"></div>
+    </div>
+    <div class="readout"><b>Clock</b>96 px</div>
+    <span class="handle handle--nw"></span><span class="handle handle--ne"></span>
+    <span class="handle handle--sw"></span><span class="handle handle--se"></span>
+  </section>
+</div>
+
+<script src="mockup.js"></script>
+<script>
+/* MOCKUP ONLY: ?long=1 swaps in a long title and artist to test truncation. */
+if (document.body.dataset.long) {
+  document.querySelector('.np__title').textContent = 'The Long Way Round the Reservoir (Night Version, 2019 Remaster) [feat. The Quiet Arithmetic Ensemble]';
+  document.querySelector('.np__artist').textContent = 'Okono Vale & The Quiet Arithmetic Ensemble with the Harbour Light Community Choir and Friends';
+}
+</script>
+</body>
+</html>

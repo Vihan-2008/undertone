@@ -1,0 +1,50 @@
+/* Arrange mode overlay (DESIGN.md 4.1, 4.3; mockup desktop.css). */
+html, body.overlay { width: 100%; height: 100%; overflow: hidden; background: transparent; user-select: none; }
+body.overlay { position: relative; }
+
+.scrim { position: absolute; inset: 0; background: rgba(13,13,12,.5); opacity: 0; transition: opacity var(--t-standard) var(--ease); }
+.items, .arrange-bar, .guides { opacity: 0; transition: opacity var(--t-standard) var(--ease), transform var(--t-standard) var(--ease); }
+body.is-in .scrim, body.is-in .items, body.is-in .guides, body.is-in .arrange-bar { opacity: 1; }
+body.is-out .scrim, body.is-out .items, body.is-out .guides, body.is-out .arrange-bar { opacity: 0; transition-timing-function: var(--ease-out); }
+
+/* outlines: 1 px, paper at 50 % or solid paper when selected */
+.item { position: absolute; outline: 1px solid rgba(239,235,226,.5); }
+.item.is-selected { outline-color: var(--paper); }
+
+.handle { position: absolute; width: 9px; height: 9px; margin: -5px 0 0 -5px; background: var(--paper); border: 1px solid var(--ink); }
+.item:not(.is-selected) .handle { display: none; }
+.handle--nw { left: 0; top: 0; }
+.handle--ne { left: 100%; top: 0; }
+.handle--sw { left: 0; top: 100%; }
+.handle--se { left: 100%; top: 100%; }
+
+.readout {
+  position: absolute; left: -1px; bottom: calc(100% + 8px); height: 22px; padding: 0 8px;
+  background: var(--ink); color: var(--paper-2); font: 400 12px/22px var(--font-instrument);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.readout.is-below { bottom: auto; top: calc(100% + 8px); }
+.readout b { font-weight: 600; margin-right: 8px; }
+.readout b:empty { display: none; }
+.item.is-selected .readout { color: var(--paper); }
+
+/* snap guides: appear instantly, fade over 120 ms when released */
+.guide { position: absolute; background: var(--vermilion); }
+.guide.is-fading { opacity: 0; transition: opacity var(--t-quick) linear; }
+
+/* the arrange bar: top-centre of the primary work area, or bottom-centre if the selection is near */
+.arrange-bar {
+  position: absolute; z-index: 2; transform: translate(-50%, -8px);
+  display: flex; align-items: center; gap: 16px; height: 44px; padding: 0 8px 0 16px;
+  background: var(--ink); border: 1px solid var(--rule-strong); color: var(--paper); white-space: nowrap;
+}
+.arrange-bar[hidden] { display: none; }
+body.is-in .arrange-bar { transform: translate(-50%, 0); }
+.arrange-bar__name { font: 600 15px/1 var(--font-instrument); font-stretch: 87.5%; letter-spacing: .01em; }
+.arrange-bar__hint { color: var(--paper-2); }
+.arrange-bar__actions { display: flex; gap: 4px; padding-left: 12px; border-left: 1px solid var(--rule); }
+.arrange-bar button { height: 28px; padding: 0 10px; border: 1px solid transparent; background: none; color: var(--paper-2); cursor: pointer; transition: color var(--t-quick) var(--ease), border-color var(--t-quick) var(--ease); }
+.arrange-bar button:hover { color: var(--paper); border-color: var(--rule-strong); }
+.arrange-bar .arrange-bar__done { background: var(--paper); color: var(--ink); font-weight: 600; }
+.arrange-bar .arrange-bar__done:hover { background: #fff; color: var(--ink); border-color: transparent; }
+.arrange-bar kbd { margin-left: 6px; font: 400 11px/1 var(--font-instrument); opacity: .7; }

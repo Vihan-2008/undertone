@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'">
+<title>Undertone clock</title>
+<link rel="stylesheet" href="../shared/tokens.css">
+<link rel="stylesheet" href="../shared/base.css">
+<link rel="stylesheet" href="../shared/clockface.css">
+<link rel="stylesheet" href="clock.css">
+</head>
+<!-- The desktop clock (DESIGN.md 5): a transparent window on the wallpaper layer.
+     The window is the clock's natural size plus a 44 px margin for its shadow; the clock
+     measures itself and reports its size so the main process can size the window.
+     State is on .clock (see shared/clockface.css). -->
+<body class="desk">
+  <div class="clock" data-align="right" aria-hidden="true"></div>
+  <script type="module" src="clock.js"></script>
+</body>
+</html>

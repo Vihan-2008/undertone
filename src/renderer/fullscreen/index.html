@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; media-src 'self' blob:">
+<title>Undertone</title>
+<link rel="stylesheet" href="../shared/tokens.css">
+<link rel="stylesheet" href="../shared/base.css">
+<link rel="stylesheet" href="fullscreen.css">
+</head>
+<!-- Full-screen player (DESIGN.md 6). State on <body>:
+     data-lyrics ready | loading | none | off    data-track (none) | nothing
+     data-controls (none) | hidden    data-playback (none) | paused
+     data-lyricsize small | medium | large    data-toast on    data-cover (none) | none -->
+<body data-lyrics="off" data-track="nothing" data-lyricsize="medium">
+<main class="player">
+  <div class="player__light" aria-hidden="true"></div>
+  <div class="player__shade" aria-hidden="true"></div>
+  <div class="player__viz" aria-hidden="true"></div>
+
+  <ul class="keys player__chrome" aria-label="Keys">
+    <li><kbd>Space</kbd>Play or pause</li>
+    <li><kbd>Left</kbd><kbd>Right</kbd>Previous, next</li>
+    <li><kbd>V</kbd>Visualizer</li>
+    <li><kbd>C</kbd>Colours</li>
+    <li><kbd>L</kbd>Lyrics</li>
+    <li><kbd>Esc</kbd>Leave</li>
+  </ul>
+
+  <section class="player__now" aria-label="Now playing">
+    <img class="player__cover" alt="Album cover">
+    <div class="player__cover player__cover--empty" aria-hidden="true"></div>
+    <h1 class="player__title">Nothing playing</h1>
+    <p class="player__artist">Start a track in any player and it shows up here.</p>
+
+    <div class="player__chrome">
+      <div class="progress">
+        <span class="progress__at">0:00</span><div class="progress__bar" role="progressbar" aria-label="Position" aria-valuemin="0"></div><span class="progress__total">0:00</span>
+      </div>
+      <div class="transport">
+        <button type="button" aria-label="Previous track" data-action="prev"><svg viewBox="0 0 24 24"><path d="M5 4h2.5v16H5zM20 4v16L9 12z"/></svg></button>
+        <button type="button" class="transport__play" aria-label="Pause" data-action="play-pause">
+          <svg class="icon-pause" viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+          <svg class="icon-play" viewBox="0 0 24 24"><path d="M7 3.5v17L20.5 12z"/></svg>
+        </button>
+        <button type="button" aria-label="Next track" data-action="next"><svg viewBox="0 0 24 24"><path d="M16.5 4H19v16h-2.5zM4 4v16l11-8z"/></svg></button>
+      </div>
+    </div>
+  </section>
+
+  <section class="lyrics" aria-label="Lyrics">
+    <ol class="lyrics__track" aria-live="off"></ol>
+    <p class="lyrics__state lyrics__state--loading" role="status">Looking up lyrics…</p>
+    <p class="lyrics__state lyrics__state--none" role="status">No synced lyrics for this track.</p>
+  </section>
+
+  <p class="toast" role="status"></p>
+</main>
+<script type="module" src="fullscreen.js"></script>
+</body>
+</html>

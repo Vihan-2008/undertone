@@ -1,0 +1,8 @@
+/* Shared by every page after tokens.css: the stage layers and the desktop-window body. */
+.ut-stage { position: relative; }
+.ut-stage > canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.ut-glow { filter: saturate(1.2); }
+
+/* Transparent wallpaper windows: no background, no selection, no scrollbars. */
+body.desk { background: transparent; overflow: hidden; user-select: none; cursor: default; }
+html:has(body.desk) { background: transparent; overflow: hidden; }

@@ -1,0 +1,101 @@
+/* Full-screen player (DESIGN.md 6; from the mockup). Every size is in vh. State on <body>:
+     data-lyrics ready | loading | none | off   data-track (none) | nothing   data-controls hidden
+     data-playback paused   data-lyricsize small | medium | large   data-toast on   data-cover none */
+
+html, body { height: 100%; overflow: hidden; }
+.player { position: fixed; inset: 0; background: var(--ink); color: var(--paper); overflow: hidden; }
+
+/* Room light: the cover, blurred and drifting. This is content, not chrome. */
+.player__light { position: absolute; inset: -25%; background: center / cover no-repeat var(--light-image, none); filter: blur(9vh) saturate(1.25); opacity: .78; animation: drift 64s ease-in-out infinite alternate; }
+.player__shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(13,13,12,.38), rgba(13,13,12,.52) 55%, rgba(13,13,12,.78)); }
+@keyframes drift {
+  from { transform: translate3d(-3%, -2%, 0) scale(1) rotate(0deg); }
+  to   { transform: translate3d(3%, 2%, 0) scale(1.12) rotate(6deg); }
+}
+body[data-playback="paused"] .player__light { animation-play-state: paused; }
+body[data-track="nothing"] .player__light { display: none; }
+
+/* Visualizer: a horizon along the bottom edge, under everything */
+.player__viz { position: absolute; left: 0; bottom: 0; width: 100%; height: 24vh; opacity: .85;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 30%); mask-image: linear-gradient(180deg, transparent, #000 30%); }
+body[data-playback="paused"] .player__viz, body[data-track="nothing"] .player__viz { opacity: .25; }
+
+/* ---- left column: cover, title, transport. Everything hangs off the cover's left edge ---- */
+.player__now { position: absolute; left: 12.5vw; top: 15vh; width: 40vh; transition: left var(--t-slow) var(--ease); }
+.player__cover { width: 40vh; height: 40vh; box-shadow: 0 2.4vh 6vh rgba(0,0,0,.45); }
+.player__title { margin: 3.2vh 0 0; font: 400 3.5vh/1.14 var(--font-liner); letter-spacing: -.005em; width: max(40vh, 30vw); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.player__artist { margin: .9vh 0 0; font: 400 1.9vh/1.3 var(--font-ui); color: rgba(239,235,226,.78); width: max(40vh, 30vw); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.player__chrome { transition: opacity var(--t-slow) var(--ease); }
+body[data-controls="hidden"] .player__chrome { opacity: 0; pointer-events: none; }
+body[data-controls="hidden"] .player { cursor: none; }
+
+.progress { margin-top: 2.6vh; display: grid; grid-template-columns: auto 1fr auto; align-items: center; column-gap: 1.2vh; font: 400 1.4vh/1 var(--font-instrument); font-variant-numeric: tabular-nums; color: rgba(239,235,226,.78); }
+.progress__bar { position: relative; height: 2px; background: rgba(239,235,226,.24); }
+.progress__bar::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--at, 0%); background: var(--paper); }
+
+.transport { margin: 1.4vh 0 0 -1.5vh; display: flex; align-items: center; gap: .6vh; }
+.transport button { width: 5.2vh; height: 5.2vh; display: grid; place-items: center; padding: 0; border: 0; background: none; color: var(--paper); cursor: pointer; opacity: .82; transition: opacity var(--t-quick) var(--ease); }
+.transport button:hover { opacity: 1; }
+.transport button:active { opacity: .6; }
+.transport svg { width: 2.4vh; height: 2.4vh; fill: currentColor; }
+.transport .transport__play svg { width: 3.2vh; height: 3.2vh; }
+.transport__play .icon-play { display: none; }
+body[data-playback="paused"] .transport__play .icon-play { display: block; }
+body[data-playback="paused"] .transport__play .icon-pause { display: none; }
+
+/* ---- right column: synced lyrics ---------------------------------------------- */
+.lyrics { position: absolute; left: 52vw; right: 7vw; top: 0; bottom: 24vh; margin: 0; padding: 0; list-style: none; font-family: var(--font-liner); }
+.lyrics__track { position: absolute; left: 0; right: 0; top: 32vh; margin: 0; padding: 0; list-style: none; transform: translateY(calc(-1 * var(--shift, 0vh))); transition: transform var(--t-slow) var(--ease); }
+.lyrics__line { margin: 0 0 2.4vh; font-size: var(--lyric-rest, 2.8vh); line-height: 1.22; opacity: .2; transform-origin: 0 50%; transition: opacity var(--t-slow) var(--ease), font-size var(--t-slow) var(--ease); text-wrap: balance; }
+.lyrics__line[data-at="-1"] { opacity: .3; }
+.lyrics__line[data-at="0"] { opacity: 1; font-size: var(--lyric-now, 4.6vh); line-height: 1.12; margin: 0 0 2.8vh; }
+.lyrics__line[data-at="1"] { opacity: .52; }
+.lyrics__line[data-at="2"] { opacity: .34; }
+.lyrics__line[data-at="3"] { opacity: .2; }
+body[data-lyricsize="small"] { --lyric-now: 3.6vh; --lyric-rest: 2.3vh; }
+body[data-lyricsize="large"] { --lyric-now: 5.8vh; --lyric-rest: 3.3vh; }
+.lyrics__state { display: none; position: absolute; left: 0; top: 34vh; margin: 0; font: 400 2.2vh/1.3 var(--font-ui); color: rgba(239,235,226,.6); }
+body[data-lyrics="loading"] .lyrics__track, body[data-lyrics="none"] .lyrics__track { display: none; }
+body[data-lyrics="loading"] .lyrics__state--loading, body[data-lyrics="none"] .lyrics__state--none { display: block; }
+
+/* Lyrics off (L), not found (after the notice clears), or nothing playing: the cover takes the centre */
+body[data-lyrics="off"] .lyrics, body[data-track="nothing"] .lyrics { display: none; }
+body[data-lyrics="off"] .player__now, body[data-track="nothing"] .player__now { left: calc(50vw - 20vh); }
+body[data-lyrics="off"] .player__title, body[data-lyrics="off"] .player__artist,
+body[data-track="nothing"] .player__title, body[data-track="nothing"] .player__artist { width: 40vh; }
+body[data-track="nothing"] .player__artist { white-space: normal; }
+
+/* ---- nothing playing ------------------------------------------------------------ */
+.player__cover--empty { display: none; border: 1px solid rgba(239,235,226,.28); box-shadow: none; }
+body[data-track="nothing"] .player__cover { display: none; }
+body[data-track="nothing"] .player__cover--empty { display: block; }
+body[data-track="nothing"] .progress { visibility: hidden; }
+body[data-track="nothing"] .transport button { opacity: .3; pointer-events: none; }
+
+/* ---- key hints: shown with the transport, gone with it -------------------------- */
+.keys { position: absolute; left: 12.5vw; top: 5vh; margin: 0; padding: 0; list-style: none; display: flex; gap: 2.6vh; font: 400 1.4vh/1 var(--font-ui); color: rgba(239,235,226,.62); white-space: nowrap; }
+body[data-lyrics="off"] .keys, body[data-track="nothing"] .keys { left: calc(50vw - 20vh); }
+.keys kbd { display: inline-block; min-width: 2.4vh; margin-right: .7vh; padding: .45vh .6vh; border: 1px solid rgba(239,235,226,.36); font: 400 1.3vh/1 var(--font-instrument); text-align: center; color: var(--paper); }
+.keys kbd + kbd { margin-left: -.3vh; }
+
+.toast { position: absolute; right: 7vw; top: 5.4vh; margin: 0; font: 400 1.6vh/1 var(--font-instrument); color: var(--paper); opacity: 0; transition: opacity var(--t-standard) var(--ease); }
+body[data-toast="on"] .toast { opacity: 1; }
+
+/* track with no cover: empty square; the room light is a flat wash of the last mid colour at 30 % */
+body[data-cover="none"] .player__cover { display: none; }
+body[data-cover="none"] .player__cover--empty { display: block; }
+body[data-cover="none"] .player__light { background: var(--wash, transparent); opacity: .3; filter: none; animation: none; }
+img.player__cover { display: block; object-fit: cover; }
+body[data-track="nothing"] img.player__cover, body[data-cover="none"] img.player__cover { display: none; }
+
+/* lyrics: the column clips the lines that slide out of it */
+.lyrics { overflow: hidden; -webkit-mask-image: linear-gradient(180deg, transparent 0, transparent 9vh, #000 22vh, #000 66vh, transparent 75vh); mask-image: linear-gradient(180deg, transparent 0, transparent 9vh, #000 22vh, #000 66vh, transparent 75vh); }
+.lyrics__line[data-at="0"].is-gap { opacity: .52; }
+.lyrics__line { transition: opacity var(--t-slow) var(--ease), font-size var(--t-slow) var(--ease), line-height var(--t-slow) var(--ease), margin var(--t-slow) var(--ease); }
+body[data-lyrics="none"].is-lyrics-gone .lyrics { opacity: 0; transition: opacity var(--t-slow) var(--ease); }
+
+
+@media (prefers-reduced-motion: reduce) {
+  .player__light { animation: none; }
+}

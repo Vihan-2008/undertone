@@ -1,0 +1,63 @@
+/* Visualizer + now-playing line on the wallpaper (DESIGN.md 3, mockup desktop.css). */
+:root { --pad-x: 56px; --pad-y: 28px; }
+
+.widget { position: absolute; left: var(--pad-x); right: var(--pad-x); top: var(--pad-y); bottom: var(--pad-y); }
+
+.widget__backdrop { position: absolute; inset: 0; background: var(--ink); opacity: 0; }
+
+.widget__albumglow {
+  position: absolute; left: 10%; right: 10%; top: 0; bottom: 56px; display: none;
+  background: radial-gradient(closest-side, var(--glow-colour, #2d7d86), transparent);
+  filter: blur(28px); opacity: .55; transition: opacity 800ms linear;
+}
+body[data-albumglow="on"] .widget__albumglow { display: block; }
+
+.viz { position: absolute; left: 0; right: 0; top: 0; bottom: 60px; }
+body[data-backdrop="on"] .viz { left: 16px; right: 16px; top: 16px; }
+body[data-np="cover"] .viz { left: 112px; }
+body[data-backdrop="on"][data-np="cover"] .viz { left: 128px; }
+body[data-np="text"] .viz { bottom: 36px; }
+body[data-np="off"] .viz { bottom: 0; }
+body[data-np="off"][data-backdrop="on"] .viz { bottom: 16px; }
+
+/* ---- now playing: paper text straight on the wallpaper ---- */
+.np {
+  position: absolute; left: 0; bottom: 0; max-width: 100%;
+  display: flex; align-items: center; gap: 12px; color: var(--paper);
+  transition: opacity 200ms linear;
+}
+.np[hidden] { display: none; }
+.np::before { /* ink wash: feathered, edge-free, only behind the text */
+  content: ""; position: absolute; inset: -26px -56px; z-index: -1;
+  background: radial-gradient(closest-side, rgba(0,0,0,.44), rgba(0,0,0,.2) 60%, transparent);
+}
+.np.is-entering { opacity: 0; }
+.np--leaving { pointer-events: none; }
+body[data-backdrop="on"] .np { left: 16px; bottom: 12px; max-width: calc(100% - 32px); }
+body[data-backdrop="on"] .np::before { display: none; }
+
+.np__cover { flex: none; width: 40px; height: 40px; object-fit: cover; box-shadow: 0 1px 3px rgba(0,0,0,.6); }
+.np__cover:not([src]) { display: none; }
+.np__text { min-width: 0; text-shadow: var(--wall-shadow); }
+.np__title { font: 600 15px/20px var(--font-ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.np__artist { font: 400 13px/18px var(--font-ui); color: rgba(239,235,226,.88); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.np__artist:empty { display: none; }
+
+body[data-np="centred"] .np { left: 50%; transform: translateX(-50%); flex-direction: column; gap: 0; text-align: center; }
+body[data-np="centred"] .np__cover { display: none; }
+body[data-np="cover"] .np { align-items: flex-end; }
+body[data-np="cover"] .np__cover { width: 96px; height: 96px; }
+body[data-np="text"] .np__cover { display: none; }
+body[data-np="text"] .np__text { display: flex; gap: 10px; align-items: baseline; }
+body[data-np="text"] .np__title { flex: 0 1 auto; }
+body[data-np="text"] .np__artist { flex: 0 10 auto; }
+body[data-np="off"] .np { display: none; }
+
+/* tone: ink text when the wallpaper behind the line is bright (DESIGN.md 3.2) */
+.np[data-tone="ink"] { color: var(--ink); }
+.np[data-tone="ink"] .np__text { text-shadow: var(--wall-shadow-ink); }
+.np[data-tone="ink"] .np__artist { color: rgba(13,13,12,.8); }
+.np[data-tone="ink"]::before { background: radial-gradient(closest-side, rgba(255,255,255,.5), rgba(255,255,255,.22) 60%, transparent); }
+body[data-backdrop="on"] .np[data-tone="ink"] { color: var(--paper); }
+body[data-backdrop="on"] .np[data-tone="ink"] .np__text { text-shadow: var(--wall-shadow); }
+body[data-backdrop="on"] .np[data-tone="ink"] .np__artist { color: rgba(239,235,226,.88); }

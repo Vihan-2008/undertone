@@ -1,0 +1,82 @@
+/* Undertone design tokens. Source of truth: design/DESIGN.md section 1.
+   Shared by settings.html, widget.html, fullscreen.html. */
+:root {
+  /* colour: ink, paper, one vermilion */
+  --ink: #0d0d0c;          /* window background */
+  --ink-2: #171715;        /* raised: inputs, tiles, hover */
+  --ink-3: #22211f;        /* pressed, slider track */
+  --rule: #302f2b;         /* hairlines, control borders */
+  --rule-strong: #4a4843;  /* control borders on hover */
+  --paper: #efebe2;        /* primary text, focus ring */
+  --paper-2: #aaa59b;      /* secondary text, values */
+  --paper-3: #77736b;      /* tertiary text, disabled. Never for body copy */
+  --vermilion: #eb4a22;    /* the one accent: current choice, on, error mark */
+  --vermilion-ink: #1a0803;/* text on a vermilion fill */
+
+  /* type: three Windows families, one job each */
+  --font-ui: "Segoe UI Variable Text", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+  --font-instrument: Bahnschrift, "Segoe UI Variable Display", "Segoe UI", sans-serif;
+  --font-liner: "Sitka Display", "Sitka Heading", Sitka, "Sitka Text", Georgia, serif;
+
+  --text-11: 11px; --text-12: 12px; --text-13: 13px; --text-15: 15px;
+  --text-18: 18px; --text-22: 22px;
+
+  /* space: 4px base */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-8: 32px; --s-12: 48px;
+
+  /* shape: square. 2px only to take the edge off small hit targets */
+  --radius: 2px;
+
+  /* motion */
+  --ease: cubic-bezier(0.2, 0, 0, 1);       /* everything on screen */
+  --ease-out: cubic-bezier(0.3, 0, 1, 1);   /* things leaving */
+  --t-quick: 120ms;    /* hover, press, toggle */
+  --t-standard: 200ms; /* tab change, arrange lift */
+  --t-slow: 450ms;     /* lyric advance, full-screen enter, transport fade */
+
+  /* wallpaper text: legibility without a box (content, not chrome) */
+  --wall-shadow: 0 1px 2px rgba(0,0,0,.85), 0 0 14px rgba(0,0,0,.55);
+  /* the same, for ink text on a bright wallpaper (data-tone="ink") */
+  --wall-shadow-ink: 0 1px 2px rgba(255,255,255,.8), 0 0 14px rgba(255,255,255,.6);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--ink); color: var(--paper);
+  font: 400 var(--text-13)/1.4 var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select { font: inherit; color: inherit; }
+kbd { font: inherit; }
+
+/* focus: a solid paper outline. Never a glow, never vermilion (vermilion means "current") */
+:focus { outline: none; }
+:focus-visible { outline: 2px solid var(--paper); outline-offset: 2px; }
+
+.num { font-family: var(--font-instrument); font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0ms !important; animation: none !important; }
+}
+
+/* ---- mockup-only stand-ins (not shipped) ---------------------------------- */
+/* A busy wallpaper with a bright region (upper right) and a dark one (lower left). */
+.wallpaper {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .22 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(112deg, rgba(255,255,255,.07) 0 2px, transparent 2px 11px),
+    repeating-linear-gradient(24deg, rgba(0,0,0,.10) 0 3px, transparent 3px 17px),
+    radial-gradient(46% 52% at 80% 20%, #fbeecb 0, #eab56a 34%, transparent 72%),
+    radial-gradient(52% 60% at 12% 88%, #07151f 0, transparent 72%),
+    radial-gradient(30% 34% at 52% 78%, #f2d7a0 0, transparent 70%),
+    conic-gradient(from 205deg at 42% 58%, #1d4c5c, #c56a45, #f0d6a3, #2a3954, #5d8a7a, #1d4c5c);
+}
+/* An invented album cover, drawn in CSS. */
+.cover-art {
+  background:
+    radial-gradient(circle at 68% 34%, #f3d9a4 0 17%, transparent 17.4%),
+    linear-gradient(168deg, transparent 0 58%, #0f2f3a 58.2% 66%, transparent 66.2%),
+    linear-gradient(174deg, transparent 0 70%, #c9572e 70.2% 100%),
+    linear-gradient(180deg, #1c5566, #2d7d86);
+}
